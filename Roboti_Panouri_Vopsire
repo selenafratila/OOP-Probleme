@@ -1,0 +1,132 @@
+/*
+ * PROBLEMĂ: Simulator Roboți de Vopsire
+ * CERINȚĂ: Simulează fluxul de lucru între roboți și panouri, urmărind consumul de vopsea și bateria.
+ * CONCEPTE: Interacțiune între obiecte, Transmitere prin referință, Încapsulare (Setters/Getters).
+ */
+
+
+#include<iostream>
+#include<vector>
+#include<string>
+using namespace std;
+
+class Panou
+{
+    int id;
+    string culoare;
+    double lungime, latime,status;
+public:
+    Panou() : id(0), culoare(""), lungime(0),latime(0),status(0){};
+    Panou (int _id, string c, double _L, double _l)
+    {
+        id=_id;
+        culoare=c;
+        lungime=_L;
+        latime=_l;
+        status=0;
+    }
+    void pictare_panou(double procent )
+    {
+        setstatus(status+procent);
+    }
+
+    friend istream& operator>>(istream& in, Panou& p)
+    {
+        in>>p.id>>p.culoare>>p.lungime>>p.latime;
+        p.status=0;
+        return in;
+    }
+    int getid() {return id;}
+    string getculoare() {return culoare;}
+    double getlungime() {return lungime;}
+    double getlatime() {return latime;}
+    double getstatus() {return status;}
+    void setstatus(double s)
+    {
+        if (s>=100) status =100;
+        else status=s;
+    }
+};
+class Robot
+{
+    int id;
+    string culoare;
+    double capacitatetanc;
+
+public:
+    Robot() :id(0), culoare(""),capacitatetanc(0) {}
+    Robot(int _id, string c, double ct)
+    {
+        id=_id;
+        culoare=c;
+        capacitatetanc=ct;
+    }
+    void pictare(Panou& p)
+    {
+        double ariatotala=p.getlungime()*p.getlatime();
+        double ariaramasa= ariatotala*(1.0-p.getstatus()/100.0 );
+        double vopseanecesara=ariaramasa*0.25;
+
+        if (this->capacitatetanc>=vopseanecesara)
+        {  this->capacitatetanc-=vopseanecesara;
+            p.setstatus(100.0);
+        }
+        else
+        {
+            double procentadaugat=(this->capacitatetanc/(ariatotala*0.25))*100.0;
+            double noulstatus=p.getstatus() +procentadaugat;
+            p.setstatus(noulstatus);
+            this->capacitatetanc=0;
+        }
+    }
+    friend istream& operator>>(istream& in, Robot& r)
+    {
+        in>>r.id>>r.culoare>>r.capacitatetanc;
+        return in;
+    }
+
+    int getid() { return id; }
+    string getculoare() { return culoare; }
+    double getcapacitatetanc() { return capacitatetanc; }
+};
+
+int main()
+{
+    int m,k;
+    cin>>m;
+    vector<Robot> roboti(m);
+    for (int i=0;i<m;i++)
+        cin>>roboti[i];
+    cin>>k;
+    vector<Panou> panouri(k);
+    for (int j=0;j<k;j++)
+        cin>>panouri[j];
+    Robot robotgolit;
+    bool gasitgolit=false;
+    for(int j=0;j<k;j++)
+        for (int i=0;i<m;i++)
+            if (roboti[i].getculoare()==panouri[j].getculoare()&&
+                roboti[i].getcapacitatetanc()>0 &&
+                panouri[j].getstatus()<99.9)
+            {
+                roboti[i].pictare(panouri[j]);
+                if (roboti[i].getcapacitatetanc()<=0&&!gasitgolit)
+                {
+                    robotgolit=roboti[i];
+                    gasitgolit=true;
+                }
+            }
+    if (gasitgolit)
+    {
+        cout<<robotgolit.getid()<<' '<<robotgolit.getculoare()<<' '<<(int)robotgolit.getcapacitatetanc()<<endl;
+    }
+
+    for (int j=0;j<k;j++)
+    {
+        cout<<panouri[j].getid()<<' ' << panouri[j].getculoare()<<' '<<
+            (int)(panouri[j].getstatus()+0.0001) << "%"<<endl;
+
+    }
+    return 0;
+
+}
