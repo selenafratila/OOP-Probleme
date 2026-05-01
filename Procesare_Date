@@ -1,7 +1,7 @@
 /*
- * PROBLEMĂ: Procesor Semnal 
- * CERINȚĂ: Simulare lanț de pedale de efecte (Booster, Clipper, Bitcrusher) aplicate unui semnal.
- * CONCEPTE: Polimorfism, Funcții Virtuale, Late Binding, Pointeri către clasa de bază (Efect**).
+ * PROBLEMĂ: Bandă de Procesare Date 
+ * CERINȚĂ: Execuția unui set de instrucțiuni de mișcare și scriere asupra unei benzi de memorie.
+ * CONCEPTE: Design Pattern logic, Aritmetica pointerilor, Abstractizare operații.
  */
 
 #include<iostream>
