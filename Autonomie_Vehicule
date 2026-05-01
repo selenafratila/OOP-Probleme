@@ -1,0 +1,116 @@
+/*
+ * PROBLEMĂ: Simulator Autonomie Vehicule
+ * CERINȚĂ: Calculul autonomiei pentru vehicule electrice și pe combustibil dintr-o flotă mixtă.
+ * CONCEPTE: Ierarhie de Moștenire, Funcții membre specializate, Formatare precizie zecimală (iomanip).
+ */
+
+#include<iostream>
+#include<string>
+#include<vector>
+#include<iomanip>
+using namespace std;
+
+class Masina
+{protected:
+    string marca;
+    int anfabricatie;
+public:
+    Masina() : marca(""), anfabricatie(0) {}
+    Masina (string m, int a) : marca(m), anfabricatie(a) {}
+    friend istream& operator>>(istream& in, Masina &m)
+    {
+        in>>m.marca>>m.anfabricatie;
+        return in;
+    }
+    friend ostream& operator<<(ostream& out, Masina &m)
+    {
+        cout<<m.marca<<' '<<m.anfabricatie;
+        return out;
+    }
+
+};
+
+class MasinaElectrica: public Masina
+{
+    double capacitatebaterie;
+public:
+    MasinaElectrica() :Masina(), capacitatebaterie(0) {}
+    MasinaElectrica(string m,int a, double cap): Masina(m,a), capacitatebaterie(cap) {}
+    friend istream& operator>>(istream& in,MasinaElectrica& m)
+    {
+        in>>(Masina& )m>>m.capacitatebaterie;
+        return in;
+    }
+    friend ostream& operator<<(ostream& out, MasinaElectrica &m)
+    {
+        out<<(Masina&)m<<' '<<fixed<<setprecision(2)<<m.capacitatebaterie<<endl;
+        return out;
+    }
+    double autonomie()
+    {
+        return capacitatebaterie*5;
+    }
+    bool operator>=(double a)
+    {
+        if (autonomie()>=a) return true;
+        else return false;
+    }
+};
+class MasinaCombustibil: public Masina
+{   double capacitaterezervor, consummediu;
+    public:
+    MasinaCombustibil() :Masina(), capacitaterezervor(0), consummediu(0)  {}
+    MasinaCombustibil(string m,int a, double cap, double cons): Masina(m,a), capacitaterezervor(cap) , consummediu(cons) {}
+    friend istream& operator>>(istream& in,MasinaCombustibil& m)
+    {
+        in>>(Masina& )m>>m.capacitaterezervor>>m.consummediu;
+        return in;
+    }
+    friend ostream& operator<<(ostream& out, MasinaCombustibil &m)
+    {
+        out<<(Masina&)m<<' '<<fixed<<setprecision(2)<<m.capacitaterezervor<<' '<<m.consummediu<<endl;
+        return out;
+    }
+    double autonomie()
+    {
+        return capacitaterezervor/consummediu*100;
+    }
+    bool operator>(double a)
+    {
+        if (autonomie()>=a) return true;
+        else return false;
+    }
+
+};
+int main()
+{
+    int n,m;
+    double k;
+    cin>>n>>m>>k;
+    vector<MasinaElectrica> electric (n);
+    vector<MasinaCombustibil> combustibil (m);
+    for (int i=0;i<n;i++)
+        cin>>electric[i];
+    for (int i=0;i<m;i++)
+        cin>>combustibil[i];
+
+    bool gasit=false;
+    for (int i=0;i<n;i++)
+    {
+        if (electric[i].autonomie()>=k)
+        {
+            cout<<electric[i];
+            gasit=true;
+        }
+    }
+    for (int i=0;i<m;i++)
+    {
+        if (combustibil[i].autonomie()>=k)
+        {
+            cout<<combustibil[i];
+            gasit=true;
+        }
+    }
+    if (!gasit) cout<<-1<<endl;
+    return 0;
+}
