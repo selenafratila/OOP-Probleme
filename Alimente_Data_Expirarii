@@ -1,0 +1,104 @@
+/*
+ * PROBLEMĂ: Tracker Expirare Alimente
+ * CERINȚĂ: Gestiunea stocului unui magazin și filtrarea produselor care expiră într-un interval dat.
+ * CONCEPTE: Parsare date calendaristice, Compoziție, Algoritmi de filtrare în colecții de obiecte.
+ */
+
+
+#include<iostream>
+#include<vector>
+#include<iomanip>
+using namespace std;
+
+class Produs
+{
+protected:
+    string nume;
+    double pret;
+public:
+    Produs() : nume(""), pret(0.0){}
+    Produs(string n, double p) :nume(n), pret(p){}
+    double getpret() {return pret;}
+    friend istream& operator>>(istream& in, Produs &p)
+    {
+        in>>p.nume>>p.pret;
+        return in;
+    }
+    friend ostream& operator<<(ostream& out, Produs& p)
+    {
+        out<<p.nume<<' '<< fixed << setprecision(2) <<p.pret;
+        return out;
+    }
+};
+class Aliment: public Produs
+{
+    int termenval;
+    string dataprod;
+    public:
+    Aliment() : Produs(), termenval(0), dataprod(""){}
+    Aliment(string n, double p, int tv, string dp) : Produs(n,p)
+    {
+        termenval=tv;
+        dataprod=dp;
+    }
+    friend istream& operator>>(istream& in, Aliment &a)
+    {
+        in>>(Produs& )a>>a.termenval>>a.dataprod;
+        return in;
+    }
+    friend ostream& operator<<(ostream& out, Aliment& a)
+    {
+        out<<(Produs&)a<<' '<<a.termenval<<' '<<a.dataprod<<endl;
+        return out;
+    }
+    int calculzile(string dataactuala)
+    {   // returneaza dataprod+termenval-dataactuala
+        //total zile pt data productiei: ZZ/LL/AAAA deci vrem 01 34 6789
+        int ziP=(dataprod[0]-'0')*10+(dataprod[1]-'0');
+        int lunaP=(dataprod[3]-'0')*10+(dataprod[4]-'0');
+        int anP=(dataprod[6]-'0')*1000+(dataprod[7]-'0')*100+(dataprod[8]-'0')*10+(dataprod[9]-'0');
+        int totalzileprod= anP*360+lunaP*30+ziP;
+        //la fel si pt parametrul dataactuala
+        int ziA=(dataactuala[0]-'0')*10+(dataactuala[1]-'0');
+        int lunaA=(dataactuala[3]-'0')*10+(dataactuala[4]-'0');
+        int anA=(dataactuala[6]-'0')*1000+(dataactuala[7]-'0')*100+(dataactuala[8]-'0')*10+(dataactuala[9]-'0');
+        int totalzileactual=anA*360+lunaA*30+ziA;
+
+        int dataexpirare=totalzileprod+termenval;
+        return dataexpirare-totalzileactual;
+    }
+};
+int main()
+{
+    int n,k;
+    cin>>n;
+    vector<Aliment> alimente(n);
+    for (int i=0;i<n;i++)
+        cin>>alimente[i];
+    string dataact;
+    cin>>dataact>>k;
+    Aliment maiscump;
+    double pretmax=-1.0;
+    vector<int> indicivalizi;
+    for (int i=0;i<n;i++)
+    {
+    int zilepanaexpira=alimente[i].calculzile(dataact);
+        if (zilepanaexpira>=0&&zilepanaexpira<=k)
+        {
+            cout<<alimente[i];
+            indicivalizi.push_back(i);
+            if (alimente[i].getpret()>pretmax)
+                pretmax=alimente[i].getpret();
+        }
+    }
+    if (indicivalizi.empty()) cout<<-1<<endl;
+    else
+    {
+        for (int i=0;i<indicivalizi.size();i++)
+        {
+            if (alimente[indicivalizi[i]].getpret()==pretmax)
+                cout<<alimente[indicivalizi[i]]<<endl;
+        }
+    }
+    return 0;
+}
