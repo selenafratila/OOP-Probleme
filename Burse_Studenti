@@ -1,0 +1,132 @@
+/*
+ * PROBLEMĂ: Manager Burse Studențești
+ * CERINȚĂ: Calculul dreptului la bursă pe baza mediilor ponderate și a numărului de credite.
+ * CONCEPTE: Moștenire (Student : Persoana), Apel constructor clasă de bază, Validare date.
+ */
+
+
+#include<iostream>
+#include<vector>
+using namespace std;
+
+class Persoana
+{   protected:
+    string nume, prenume;
+    public:
+    Persoana () : nume(""), prenume("") {}
+    Persoana(string n, string p)
+    {
+        nume=n;
+        prenume=p;
+    }
+    friend istream& operator>>(istream& in, Persoana& p)
+    {
+        in>>p.nume>>p.prenume;
+        return in;
+    }
+
+    friend ostream& operator<<(ostream& out, Persoana& p)
+    {
+        out<<p.nume<<" "<<p.prenume;
+        return out;
+    }
+};
+class Curs
+{public:
+    int id,numarcredite;
+    string nume;
+
+    Curs() : id(0), nume(""),numarcredite(0) {}
+    Curs( int _id, string n, int nrcr)
+    {
+        id=_id;
+        nume=n;
+        numarcredite=nrcr;
+    }
+    friend istream& operator>>(istream& in, Curs& c)
+    {
+        in>>c.id>>c.nume>>c.numarcredite;
+        return in;
+    }
+    friend ostream& operator<<(ostream& out, Curs& c)
+    {
+        out<<c.id<<" "<<c.nume<<" "<<c.numarcredite<<endl;
+        return out;
+    }
+};
+
+class Student:public Persoana
+{
+    int ncursuri;
+    int *idcursuri;
+    int *note;
+    public:
+    Student() : Persoana(), ncursuri(0), idcursuri(nullptr), note(nullptr) {}
+    Student(string n, string p, int nrc, int* idc, int*nt):Persoana(n,p)
+    {
+        ncursuri=nrc;
+        idcursuri=new int[nrc];
+        note=new int[nrc];
+        for(int i=0;i<nrc;i++)
+            cin>>idcursuri[i];
+        for(int i=0;i<nrc;i++)
+            cin>>note[i];
+    }
+    friend istream& operator>>(istream& in, Student& s) {
+
+        in >> (Persoana&)s;
+        in>>s.ncursuri;
+        s.idcursuri = new int[s.ncursuri];
+        for (int i = 0; i < s.ncursuri; i++) in >> s.idcursuri[i];
+
+        s.note = new int[s.ncursuri];
+        for (int i = 0; i < s.ncursuri; i++) in >> s.note[i];
+
+        return in;
+    }
+    friend ostream& operator<<(ostream& out, Student& s)
+    {
+        out << (Persoana&)s;
+        return out;
+    }
+    int calculeazabursa(Curs* cursuri, int m )
+    {
+        int sumanote=0;
+        int sumacredite=0;
+        for (int i=0;i<ncursuri;i++)
+        {
+            if (note[i]<5) return 0;
+            for (int j=0; j<m;j++) //parcurge studentii
+                if (idcursuri[i]==cursuri[j].id)
+                {
+                    sumanote+=note[i]*cursuri[j].numarcredite;
+                    sumacredite+=cursuri[j].numarcredite;
+                }
+        }
+    if (sumacredite==0) return 0;
+        double media=(double)sumanote/sumacredite;
+        if(media >= 8.50 && media <= 9.00) return 500;
+        if(media > 9.00 && media <= 9.50) return 700;
+        if(media > 9.50) return 1000;
+        return 0;
+    }
+};
+int main()
+{
+    int n,m;
+    cin>>n;
+    vector<Student> studenti(n);
+    for (int i=0;i<n;i++) cin>>studenti[i];
+    cin>>m;
+    vector<Curs> cursuri(m);
+    for (int i=0;i<m;i++) cin>>cursuri[i];
+    for (int i=0;i<n;i++)
+    {
+        double bursa=studenti[i].calculeazabursa( &cursuri[0],  m);
+        if (bursa>0)
+        {
+            cout<<studenti[i]<<' '<<bursa<<endl;
+        }
+    }
+return 0;
+}
