@@ -1,0 +1,119 @@
+/*
+ * PROBLEMĂ: Procesor Semnal 
+ * CERINȚĂ: Simulare lanț de pedale de efecte (Booster, Clipper, Bitcrusher) aplicate unui semnal.
+ * CONCEPTE: Polimorfism, Funcții Virtuale, Late Binding, Pointeri către clasa de bază (Efect**).
+ */
+
+#include<iostream>
+#include<string>
+using namespace std;
+class Banda
+{  public:
+    int n;
+    int idxcrt;
+    int* date;
+
+    Banda() : n(0), idxcrt(0), date(nullptr) {}
+    Banda(int dim ) : n(dim), idxcrt(0)
+    {
+        date=new int[n];
+        for (int i=0;i<n;i++) date[i]=0;
+    }
+    
+    ~Banda() {delete [] date;}
+};
+class Operatie
+{
+public:
+    virtual ~Operatie() {}
+};
+
+class MoveLeft: public Operatie
+{
+public:
+    MoveLeft(Banda& b, int n)
+    {
+        b.idxcrt-=n;
+        if (b.idxcrt<0) b.idxcrt=0;
+    }
+};
+
+class MoveRight: public Operatie
+{
+public:
+    MoveRight(Banda &b, int n)
+    {
+        b.idxcrt+=n;
+        if (b.idxcrt>=b.n) b.idxcrt=b.n-1;
+    }
+};
+
+class WriteElement: public Operatie
+{
+public:
+    WriteElement(Banda &b, int n)
+    {
+        b.date[b.idxcrt]=n;
+    }
+};
+
+class ReadElement: public Operatie
+{ int valcitita;
+public:
+    ReadElement(Banda&b)
+    {
+        valcitita=b.date[b.idxcrt];
+    }
+    int getvalcitita() {return valcitita;}
+
+};
+
+class IncreaseElement:public Operatie
+{
+public:
+    IncreaseElement(Banda& b, int n)
+    {
+        b.date[b.idxcrt]+=n;
+    }
+};
+
+int main()
+{
+    int n,m,val;
+    cin>>n>>m;
+    Banda b(n);
+    for (int i=0;i<n;i++)
+        cin>>b.date[i];
+ 
+    for (int i=0;i<m;i++)
+    {string comanda;
+        cin>>comanda;
+        if (comanda=="Dreapta")
+        {
+            cin>>val;
+            MoveRight(b,val);
+        }
+        else if (comanda=="Stanga")
+        {
+            cin>>val;
+            MoveLeft(b,val);
+        }
+        else if (comanda=="Scrie")
+        {
+            cin>>val;
+            WriteElement(b,val);
+        }
+        else if (comanda=="Creste")
+        {
+            cin>>val;
+            IncreaseElement(b,val);
+        }
+        else if (comanda=="Citeste")
+        {
+            ReadElement op(b);
+            cout<<op.getvalcitita()<<endl;
+        }
+    }
+    
+    return 0;
+}
