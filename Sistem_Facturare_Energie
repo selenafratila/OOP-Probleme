@@ -1,0 +1,116 @@
+/*
+ * PROBLEMĂ: Sistem de Facturare Energie
+ * CERINȚĂ: Monitorizarea consumului casnic și calculul facturilor pe baza unui prag de tarifare.
+ * CONCEPTE: Gestiune memorie dinamică (double*), Constructori/Destructori, Operator Overloading (<<, >>, []).
+ */
+
+#include<iostream>
+#include<iomanip>
+using namespace std;
+
+class Gospodarie
+{
+    string nume;
+    unsigned int nzile;
+    double *consumzilnic;
+    double consumtotal;
+public:
+    Gospodarie() : nume(""), nzile(0), consumzilnic(nullptr), consumtotal(0) {}
+    Gospodarie(string n, unsigned int nz, double *cz) //de initializare
+    {
+        nume=n;
+        nzile=nz;
+        consumzilnic=new double[nzile];
+        for (unsigned int i=0;i<nzile;i++)
+        {
+            consumzilnic[i]=cz[i];
+            consumtotal+=consumzilnic[i];
+        }
+    }
+    ~Gospodarie() {delete [] consumzilnic;}
+
+    string getnume() {return nume;}
+    double getconsumtotal() {return consumtotal;}
+
+    friend istream& operator>>(istream& in, Gospodarie& a)
+    {
+        in>>a.nume>>a.nzile;
+        a.consumzilnic=new double[a.nzile];
+        for (unsigned int i=0;i<a.nzile;i++)
+        {
+            in>>a.consumzilnic[i];
+            a.consumtotal+=a.consumzilnic[i];
+        }
+        return in;
+    }
+};
+
+class Furnizorenergie
+{
+    string nume;
+    double prag,tarifredus,tarifnormal;
+    unsigned int nclienti;
+    Gospodarie*clienti;
+public:
+    Furnizorenergie() : nume(""), prag(0), tarifredus(0), tarifnormal(0), nclienti(0), clienti(nullptr) {}
+    Furnizorenergie(string n, double p, double tr, double tn, unsigned int nc)
+    {
+        nume=n;
+        prag=p;
+        tarifredus=tr;
+        tarifnormal=tn;
+        nclienti=nc;
+        clienti=new Gospodarie[nc];
+    }
+    ~Furnizorenergie() {delete [] clienti;}
+    double calculfactura(double consumtotal)
+    {
+        if (consumtotal<=prag)
+            return consumtotal*tarifredus;
+        else return (prag*tarifredus)+ tarifnormal*(consumtotal-prag);
+    }
+    unsigned int getNcase() {return nclienti;}
+    Gospodarie& operator[](unsigned int idx)
+    {
+        return clienti[idx];
+    }
+
+    double operator() (unsigned int idx)
+    {
+        return calculfactura(clienti[idx].getconsumtotal());
+    }
+
+    friend istream& operator>>(istream& in, Furnizorenergie& f)
+    {
+        in>>f.nume>>f.prag>>f.tarifredus>>f.tarifnormal>>f.nclienti;
+        f.clienti=new Gospodarie[f.nclienti];
+        for (unsigned int i=0;i<f.nclienti;i++)
+        {
+            in>>f.clienti[i];
+        }
+        return in;
+    }
+};
+int main()
+{
+    Furnizorenergie furnizor;
+    cin>>furnizor;
+
+    double val;
+    cin>>val;
+    bool gasit = false;
+    for (unsigned int i=0;i<furnizor.getNcase();i++)
+    {
+        double valfactura=furnizor(i);
+        if(valfactura>val)
+        {
+            cout<<furnizor[i].getnume()<<' '<<fixed<<setprecision(2)<< furnizor[i].getconsumtotal()
+            <<" "<<valfactura<<endl;
+            gasit=true;
+        }
+    }
+    if(gasit==false) cout<<-1<<endl;
+    return 0;
+}
+
+
