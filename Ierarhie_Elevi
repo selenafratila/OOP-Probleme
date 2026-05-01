@@ -1,0 +1,118 @@
+/*
+ * PROBLEMĂ: Ierarhie Elevi și Materii (Comparator Note)
+ * CERINȚĂ: Gestiunea elevilor și a notelor la diverse materii, urmată de identificarea elevului cu cea mai mare notă la o materie specifică.
+ * CONCEPTE: Moștenire (Elev : Persoana), Compoziție (Materie în Elev), Management memorie (new/delete[]), Supraîncărcarea operatorului ().
+ */
+
+#include<iostream>
+#include<string>
+#include<vector>
+using namespace std;
+class Materie
+{
+   string nume;
+   double nota;
+public:
+   Materie() : nume(""), nota(0) {}
+   Materie(string n, double nt) : nume(n), nota(nt) {}
+   string getnume() { return nume; }
+   double getnota() {return nota;}
+   friend istream& operator>>(istream& in, Materie &m)
+   {
+      in>>m.nume>>m.nota;
+      return in;
+   }
+};
+
+class Persoana
+{
+protected:
+   string nume;
+public:
+   Persoana() : nume(""){}
+   Persoana(string n): nume(n){};
+   friend istream& operator>>(istream& in, Persoana &p)
+   {
+      in>>p.nume;
+      return in;
+   }
+};
+
+class Elev : public Persoana
+{
+   int nrmat;
+   Materie* materii;
+public:
+   Elev() : Persoana(), nrmat(0), materii(nullptr) {}
+   Elev(string n, int nr) : Persoana(n), nrmat(nr)
+   {
+      materii=new Materie[nrmat];
+   }
+   ~Elev() { delete []materii;}
+   friend istream& operator>>(istream& in, Elev &e)
+   {
+      in >> (Persoana&) e>>e.nrmat;
+      e.materii=new Materie[e.nrmat];
+      for (int i=0; i<e.nrmat; i++)
+      { Materie current;
+         in>>current;
+         e.materii[i]=current;
+      }
+      return in;
+   }
+   friend ostream& operator<<(ostream& out, Elev &e)
+   {
+      out<<e.nume;
+      return out;
+   }
+   double gasestenota(string numematerie)
+   {
+      for (int i=0;i<nrmat;i++)
+      {
+         if (materii[i].getnume()==numematerie)
+            return materii[i].getnota();
+      }
+      return -1;
+   }
+
+   bool operator() (Elev& e1, Elev& e2, string numematerie)
+   {
+      double nota1=e1.gasestenota(numematerie);
+      double nota2=e2.gasestenota(numematerie);
+      if (nota1!=-1 && nota2!=-1 && nota1>nota2)
+         return true;
+      else return false;
+   }
+};
+int main()
+{
+   int k;
+   cin>>k;
+   vector<Elev> elevi(k);
+   for (int i=0; i<k; i++)
+   {
+      cin>>elevi[i];
+   }
+   string numematerie;
+   cin>>numematerie;
+   Elev comparator;
+   int idxmax=0;
+   bool gasitmateria=false;
+   for (int i=0;i<k;i++)
+   {
+      if (comparator(elevi[i],elevi[idxmax],numematerie))
+      {
+         idxmax=i;
+         gasitmateria=true;
+      }
+
+      if (!gasitmateria&& elevi[i].gasestenota(numematerie)!=-1)
+      {
+         idxmax=i;
+         gasitmateria=true;
+      }
+   }
+   if (gasitmateria) cout<<elevi[idxmax]<<endl;
+   else cout<<-1<<endl;
+   return 0;
+}
